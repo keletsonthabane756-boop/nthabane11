@@ -1,0 +1,91 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Exam Page</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Student Exam Portal</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="student.html" class="active">Take Exam</a>
+    </nav>
+  </header>
+
+  <main>
+    <section>
+      <h2>Select Exam</h2>
+      <select id="examSelect">
+        <option value="">-- Choose an Exam --</option>
+      </select>
+      <button id="startExam">Start Exam</button>
+    </section>
+
+    <section id="examSection" style="display:none;">
+      <form id="studentExamForm"></form>
+      <button id="submitExam">Submit Exam</button>
+      <h3 id="result"></h3>
+    </section>
+  </main>
+
+  <script>
+    const examSelect = document.getElementById('examSelect');
+    const examSection = document.getElementById('examSection');
+    const form = document.getElementById('studentExamForm');
+    const result = document.getElementById('result');
+    const exams = JSON.parse(localStorage.getItem('exams')) || [];
+
+    // Load exams
+    exams.forEach((exam, index) => {
+      const option = document.createElement('option');
+      option.value = index;
+      option.textContent = exam.title;
+      examSelect.appendChild(option);
+    });
+
+    document.getElementById('startExam').addEventListener('click', () => {
+      const selectedIndex = examSelect.value;
+      if (selectedIndex === "") {
+        alert("Please select an exam.");
+        return;
+      }
+
+      const selectedExam = exams[selectedIndex];
+      form.innerHTML = '';
+      selectedExam.questions.forEach((q, i) => {
+        const div = document.createElement('div');
+        div.className = 'question';
+        div.innerHTML = `
+          <p><strong>Q${i+1}: ${q.question}</strong></p>
+          <label><input type="radio" name="q${i}" value="A" required> ${q.options[0]}</label><br>
+          <label><input type="radio" name="q${i}" value="B"> ${q.options[1]}</label><br>
+          <label><input type="radio" name="q${i}" value="C"> ${q.options[2]}</label><br>
+          <label><input type="radio" name="q${i}" value="D"> ${q.options[3]}</label><br>
+        `;
+        form.appendChild(div);
+      });
+
+      examSection.style.display = 'block';
+      result.textContent = '';
+    });
+
+    document.getElementById('submitExam').addEventListener('click', () => {
+      const selectedIndex = examSelect.value;
+      const selectedExam = exams[selectedIndex];
+      let score = 0;
+
+      selectedExam.questions.forEach((q, i) => {
+        const selected = form.querySelector(`input[name="q${i}"]:checked`);
+        if (selected && selected.value.toUpperCase() === q.correct.toUpperCase()) {
+          score++;
+        }
+      });
+
+      const total = selectedExam.questions.length;
+      result.textContent = `You scored ${score} out of ${total}`;
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Registration</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Student Registration</h1>
+  </header>
+
+  <main>
+    <section class="register-section">
+      <form id="registerForm">
+        <input type="text" id="fullName" placeholder="Full Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <input type="file" id="profilePic" accept="image/*">
+        <button type="submit">Register</button>
+      </form>
+      <p id="msg" class="success-msg"></p>
+      <p>Already registered? <a href="login.html">Login here</a></p>
+    </section>
+  </main>
+
+  <script>
+    const registerForm = document.getElementById('registerForm');
+    const msg = document.getElementById('msg');
+
+    registerForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const fullName = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const profilePicInput = document.getElementById('profilePic');
+
+      // Get existing students or empty array
+      let students = JSON.parse(localStorage.getItem('students')) || [];
+
+      const saveStudent = (profilePic) => {
+        students.push({ fullName, email, password, profilePic });
+        localStorage.setItem('students', JSON.stringify(students));
+        registerForm.reset();
+        msg.textContent = "Registration successful! You can now login.";
+      }
+
+      if(profilePicInput.files.length > 0) {
+        const reader = new FileReader();
+        reader.onload = function() {
+          saveStudent(reader.result);
+        }
+        reader.readAsDataURL(profilePicInput.files[0]);
+      } else {
+        saveStudent(null);
+      }
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Examiner Portal</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Examiner Portal</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="examiner.html" class="active">Set Exam</a>
+    </nav>
+  </header>
+
+  <main>
+    <section>
+      <h2>Create Exam</h2>
+      <form id="examForm">
+        <label for="examTitle">Exam Title:</label>
+        <input type="text" id="examTitle" placeholder="Enter exam title" required>
+        <div id="questionsContainer"></div>
+        <button type="button" id="addQuestion">+ Add Question</button>
+        <button type="submit">Save Exam</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Saved Exams</h2>
+      <div id="examList"></div>
+    </section>
+  </main>
+
+  <script>
+    const examForm = document.getElementById('examForm');
+    const questionsContainer = document.getElementById('questionsContainer');
+    const examList = document.getElementById('examList');
+    const addQuestionBtn = document.getElementById('addQuestion');
+
+    // Add a new question block
+    function createQuestionBlock() {
+      const div = document.createElement('div');
+      div.className = 'question-block';
+      div.innerHTML = `
+        <hr>
+        <label>Question:</label>
+        <input type="text" class="question" placeholder="Enter question" required>
+        <label>Option A:</label>
+        <input type="text" class="optA" required>
+        <label>Option B:</label>
+        <input type="text" class="optB" required>
+        <label>Option C:</label>
+        <input type="text" class="optC" required>
+        <label>Option D:</label>
+        <input type="text" class="optD" required>
+        <label>Correct Answer (A/B/C/D):</label>
+        <input type="text" class="correct" maxlength="1" pattern="[ABCDabcd]" required>
+      `;
+      questionsContainer.appendChild(div);
+    }
+
+    addQuestionBtn.addEventListener('click', createQuestionBlock);
+    createQuestionBlock(); // Add one question by default
+
+    // Save exam
+    examForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const title = document.getElementById('examTitle').value.trim();
+      const questionBlocks = document.querySelectorAll('.question-block');
+
+      const questions = Array.from(questionBlocks).map(block => ({
+        question: block.querySelector('.question').value,
+        options: [
+          block.querySelector('.optA').value,
+          block.querySelector('.optB').value,
+          block.querySelector('.optC').value,
+          block.querySelector('.optD').value
+        ],
+        correct: block.querySelector('.correct').value.toUpperCase()
+      }));
+
+      let exams = JSON.parse(localStorage.getItem('exams')) || [];
+      exams.push({ title, questions });
+      localStorage.setItem('exams', JSON.stringify(exams));
+
+      alert('Exam saved successfully!');
+      examForm.reset();
+      questionsContainer.innerHTML = '';
+      createQuestionBlock();
+      loadExams();
+    });
+
+    // Load exams
+    function loadExams() {
+      const exams = JSON.parse(localStorage.getItem('exams')) || [];
+      examList.innerHTML = '';
+      exams.forEach((exam, index) => {
+        const div = document.createElement('div');
+        div.className = 'exam-item';
+        div.innerHTML = `
+          <strong>${exam.title}</strong> - ${exam.questions.length} Questions
+          <button onclick="deleteExam(${index})">Delete</button>
+        `;
+        examList.appendChild(div);
+      });
+    }
+
+    // Delete exam
+    function deleteExam(index) {
+      let exams = JSON.parse(localStorage.getItem('exams')) || [];
+      exams.splice(index, 1);
+      localStorage.setItem('exams', JSON.stringify(exams));
+      loadExams();
+    }
+
+    window.onload = loadExams;
+  </script>
+</body>
+</html>
